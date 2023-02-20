@@ -1,13 +1,41 @@
-import { configureStore, createSlice } from "@reduxjs/toolkit";
-import { Provider, useDispatch, useSelector } from "react-redux";
-import React, { useState, useCallback, useEffect } from "react";
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.authStoreBuilder = exports.httpProviderBuilder = void 0;
+const toolkit_1 = require("@reduxjs/toolkit");
+const react_redux_1 = require("react-redux");
+const react_1 = __importStar(require("react"));
 const APPLICATION_JSON = 'application/json';
 const CONTENT_TYPE = 'Content-Type';
 const defaultCreateHttp = {
     baseUrl: '',
     defaultApplyError: (error) => { },
-    getToken: () => undefined,
+    getToken: () => null,
     refreshToken: (res) => { },
+    dispatchHook: (react_redux_1.useDispatch),
+    logoutAction: () => { },
 };
 const defaultRequestConfig = {
     url: '',
@@ -23,17 +51,20 @@ const defaultRequestParams = {
     pathParams: [],
     body: null,
 };
-export const httpProviderBuilder = function (createHttpParams = defaultCreateHttp) {
+const httpProviderBuilder = function (createHttpParams = defaultCreateHttp) {
     createHttpParams = Object.assign(Object.assign({}, defaultCreateHttp), createHttpParams);
-    const { baseUrl, defaultApplyError, getToken, refreshToken } = createHttpParams;
+    const { baseUrl, defaultApplyError, getToken, refreshToken, dispatchHook, logoutAction } = createHttpParams;
     return (reqConfig = defaultRequestConfig) => {
         if (!reqConfig.applyError)
             reqConfig.applyError = defaultApplyError;
         reqConfig = Object.assign(Object.assign({}, defaultRequestConfig), reqConfig);
-        const logout = () => { };
-        const [isLoading, setIsLoading] = useState(false);
-        const [error, setError] = useState(null);
-        const sendRequest = useCallback(async (params = defaultRequestParams) => {
+        const dispatch = dispatchHook();
+        const logout = () => {
+            dispatch(logoutAction());
+        };
+        const [isLoading, setIsLoading] = (0, react_1.useState)(false);
+        const [error, setError] = (0, react_1.useState)(null);
+        const sendRequest = (0, react_1.useCallback)(async (params = defaultRequestParams) => {
             var _a;
             params = Object.assign(Object.assign({}, defaultRequestParams), params);
             if (isLoading && reqConfig.state === 'one')
@@ -113,7 +144,7 @@ export const httpProviderBuilder = function (createHttpParams = defaultCreateHtt
                 setIsLoading(false);
             }
         }, [isLoading, reqConfig]);
-        useEffect(() => {
+        (0, react_1.useEffect)(() => {
             if (error)
                 reqConfig.applyError(error);
         }, [error]);
@@ -124,15 +155,16 @@ export const httpProviderBuilder = function (createHttpParams = defaultCreateHtt
         };
     };
 };
+exports.httpProviderBuilder = httpProviderBuilder;
 const defaultAuthStoreArg = {
-    getToke: () => undefined,
+    getToke: () => null,
     setToken: (token) => { },
     removeToken: () => { }
 };
-export const authStoreBuilder = function (authBuilderArg) {
+const authStoreBuilder = function (authBuilderArg = defaultAuthStoreArg) {
     const { getToke, setToken, removeToken } = authBuilderArg;
     const token = getToke();
-    const authSlice = createSlice({
+    const authSlice = (0, toolkit_1.createSlice)({
         name: 'auth',
         initialState: { isLogin: !!token, user: null },
         reducers: {
@@ -148,14 +180,14 @@ export const authStoreBuilder = function (authBuilderArg) {
             }
         }
     });
-    const authStore = configureStore({
+    const authStore = (0, toolkit_1.configureStore)({
         reducer: {
             auth: authSlice.reducer
         }
     });
-    const AuthProvider = (props) => React.createElement((Provider), { store: authStore, children: props.children });
-    const useAuthSelector = useSelector;
-    const useAuthDispatch = (useDispatch);
+    const AuthProvider = (props) => react_1.default.createElement((react_redux_1.Provider), { store: authStore, children: props.children });
+    const useAuthSelector = react_redux_1.useSelector;
+    const useAuthDispatch = (react_redux_1.useDispatch);
     const useAuthStore = () => useAuthSelector(state => state.auth);
     const { login: loginAction, logout: logoutAction } = authSlice.actions;
     return {
@@ -163,6 +195,8 @@ export const authStoreBuilder = function (authBuilderArg) {
         logoutAction,
         useAuthSelector,
         useAuthDispatch,
-        useAuthStore
+        useAuthStore,
+        AuthProvider
     };
 };
+exports.authStoreBuilder = authStoreBuilder;
