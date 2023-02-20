@@ -208,17 +208,13 @@ export const authStoreBuilder = function<TUser extends {token:string}>(authBuild
     user:TUser | null;
   }
   
-  interface AuthReduces extends SliceCaseReducers<AuthState> {
-    login:(state:any,action:{type:string,payload:any}) => void;
-    logout:(state:any) => void;
-  }
   
 
-  const authSlice = createSlice<AuthState,AuthReduces,'auth'>({
+  const authSlice = createSlice({
     name:'auth',
-    initialState:{isLogin:!!token,user:null},
+    initialState:{isLogin:!!token,user:null} as AuthState,
     reducers:{
-      login(state,action){
+      login(state: { user: any; isLogin: boolean; },action: { payload: any; }){
         setToken(action.payload!.token);
   
         state.user = action.payload;
@@ -254,7 +250,7 @@ export const authStoreBuilder = function<TUser extends {token:string}>(authBuild
 
   const useAuthDispatch = useDispatch<AppDispatch>;
 
-  const useAuthStore = () => useAuthSelector(state => state.auth);
+  const useAuthStore = () => useAuthSelector((state: { auth: any; }) => state.auth);
 
   const {login:loginAction,logout:logoutAction} = authSlice.actions;
   
