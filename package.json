@@ -1,0 +1,30 @@
+{
+  "name": "react-http-provider",
+  "version": "1.0.0",
+  "description": "Manaing http request with authentication using redux and redux toolkit",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BaselAskar/react-http-provider.git"
+  },
+  "keywords": [
+    "use-http",
+    "react-http",
+    "http-hook"
+  ],
+  "author": "Basel_Askar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BaselAskar/react-http-provider/issues"
+  },
+  "homepage": "https://github.com/BaselAskar/react-http-provider#readme",
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.9.2",
+    "@types/react": "^18.0.28",
+    "react": "^18.2.0",
+    "react-redux": "^8.0.5"
+  }
+}
