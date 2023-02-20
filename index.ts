@@ -1,4 +1,4 @@
-import { SliceCaseReducers, configureStore, createSlice, createStore } from "@reduxjs/toolkit";
+import { SliceCaseReducers, configureStore, createSlice, Dispatch,AnyAction } from "@reduxjs/toolkit";
 import { Provider, TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import React, { useState,useCallback, useEffect, PropsWithChildren } from "react";
 import { AuthStoreBuilder, HttpBuilder, HttpResponse, RequestConfi, RequestParams } from "./types";
@@ -11,8 +11,10 @@ const CONTENT_TYPE = 'Content-Type';
   const defaultCreateHttp: HttpBuilder = {
     baseUrl: '',
     defaultApplyError:(error:any) => {},
-    getToken:() => undefined,
+    getToken:() => null,
     refreshToken:(res:Response) => {},
+    dispatchHook:useDispatch<Dispatch<AnyAction>>,
+    logoutAction:() => {},
   }
 
 
@@ -43,7 +45,7 @@ const CONTENT_TYPE = 'Content-Type';
 
     createHttpParams = {...defaultCreateHttp,...createHttpParams};
 
-    const  {baseUrl,defaultApplyError,getToken,refreshToken} = createHttpParams;
+    const  {baseUrl,defaultApplyError,getToken,refreshToken,dispatchHook,logoutAction} = createHttpParams;
 
     return <TResut = any> (reqConfig:RequestConfi<TResut> = defaultRequestConfig) => {
 
@@ -51,7 +53,11 @@ const CONTENT_TYPE = 'Content-Type';
 
     reqConfig = {...defaultRequestConfig,...reqConfig};
 
-    const logout = () => {};
+    const dispatch = dispatchHook();
+
+    const logout = () => {
+      dispatch(logoutAction());
+    };
 
     const [isLoading,setIsLoading] = useState<boolean>(false);
     const [error,setError] = useState<any>(null);
@@ -184,13 +190,13 @@ const CONTENT_TYPE = 'Content-Type';
 }
 
 const defaultAuthStoreArg:AuthStoreBuilder = {
-  getToke:() => undefined,
+  getToke:() => null,
   setToken:(token) => {},
   removeToken:() => {}
 }
 
 
-export const authStoreBuilder = function<TUser extends {token:string}>(authBuilderArg:AuthStoreBuilder){
+export const authStoreBuilder = function<TUser extends {token:string}>(authBuilderArg:AuthStoreBuilder = defaultAuthStoreArg){
 
 
   const {getToke,setToken,removeToken} = authBuilderArg;
@@ -257,7 +263,8 @@ export const authStoreBuilder = function<TUser extends {token:string}>(authBuild
     logoutAction,
     useAuthSelector,
     useAuthDispatch,
-    useAuthStore
+    useAuthStore,
+    AuthProvider
   }
 
 }

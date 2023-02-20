@@ -1,8 +1,12 @@
+import { Dispatch,AnyAction } from "@reduxjs/toolkit";
+
 export interface HttpBuilder{
-  baseUrl:string,
-  defaultApplyError:(error:any) => void,
-  getToken:() => string | undefined,
-  refreshToken:(respones:Response) => void,
+  baseUrl:string;
+  defaultApplyError:(error:any) => void;
+  getToken:() => string | null;
+  refreshToken:(respones:Response) => void;
+  dispatchHook:() => any;
+  logoutAction:() => void;
 }
 
 
@@ -39,7 +43,7 @@ export interface HttpResponse<T> {
 
 
 export interface AuthStoreBuilder {
-  getToke:() => string | undefined;
+  getToke:() => string | null;
   setToken:(token:string) => void;
   removeToken:() => void;
 }
