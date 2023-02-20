@@ -1,6 +1,6 @@
 {
   "name": "react-http-provider",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Manaing http request with authentication using redux and redux toolkit",
   "main": "index.ts",
   "scripts": {
