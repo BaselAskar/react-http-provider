@@ -1,7 +1,7 @@
 import { SliceCaseReducers, configureStore, createSlice, Dispatch,AnyAction } from "@reduxjs/toolkit";
 import { Provider, TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import React, { useState,useCallback, useEffect, PropsWithChildren } from "react";
-import { AuthStoreBuilder, HttpBuilder, HttpResponse, RequestConfi, RequestParams } from "./types";
+import { AuthStoreBuilder, HttpBuilder, HttpResponse, RequestConfi, RequestParams, AuthState } from "./types";
 
 
 const APPLICATION_JSON = 'application/json';
@@ -26,6 +26,7 @@ const CONTENT_TYPE = 'Content-Type';
       header: new Map<string,string>(),
       auth: false,
       state: 'one',
+      preventRefreshToken:false,
       applyData: (response:HttpResponse<any>) => {throw 'you have to provide applyData property ...'},
       dependinces: [],  
   }
@@ -64,13 +65,11 @@ const CONTENT_TYPE = 'Content-Type';
 
 
     const sendRequest = useCallback(async (params: RequestParams = defaultRequestParams) => {
-
       params = {...defaultRequestParams,...params};
       if (isLoading && reqConfig.state === 'one') return;
 
       setIsLoading(true);
       setError(null);
-
       const variablesInUrl = (params?.pathParams && params.pathParams?.length > 0) ? '/' + params.pathParams.join('/') : '';
 
       let queryParams = '';
@@ -121,7 +120,7 @@ const CONTENT_TYPE = 'Content-Type';
             body: bodyBuilder,
           });
 
-          if (response.status === 403){
+          if (response.status === 401){
             logout();
           }
 
@@ -130,14 +129,13 @@ const CONTENT_TYPE = 'Content-Type';
             throw await response.json();
           }
 
-          if (reqConfig.auth){
+          if (reqConfig.auth && !reqConfig.preventRefreshToken){
             refreshToken(response);
           }
 
 
 
           let data:any;
-
           try{
             data = (await response.json()) as TResut;
           }catch(err){
@@ -169,7 +167,7 @@ const CONTENT_TYPE = 'Content-Type';
 
       
 
-    },[isLoading, reqConfig])
+    },[isLoading, ...reqConfig.dependinces!])
 
 
     useEffect(() =>{ 
@@ -203,10 +201,6 @@ export const authStoreBuilder = function<TUser extends {token:string}>(authBuild
 
   const token = getToke();
 
-  interface AuthState {
-    isLogin:boolean;
-    user:TUser | null;
-  }
   
   
 
